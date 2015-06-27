@@ -1,0 +1,26 @@
+{
+  "name": "MLAudio",
+  "version": "1.0.0",
+  "summary": "MLAudio",
+  "license": {
+    "type": "MIT"
+  },
+  "authors": {
+    "molon": "dudl@qq.com"
+  },
+  "platforms": {
+    "ios": "7.0"
+  },
+  "public_header_files": "Classes/**/*.h",
+  "source_files": "Classes/**/*.{h,m}",
+  "vendored_frameworks": "Classes/mp3_en_de/lame.framework",
+  "vendored_libraries": "Classes/amr_en_de/lib/*.{a}",
+  "resources": "Classes/**/*.bundle",
+  "requires_arc": true,
+  "dependencies": {
+    "AFNetworking": [
+      "~> 2.5.4"
+    ]
+  },
+  "prefix_header_contents": "\n#ifdef DEBUG\n\n#define DLOG(format, ...)                   \\\nNSLog(@\"\\n%s:%d\\n%@\",               \\\n__PRETTY_FUNCTION__, __LINE__,      \\\n[NSString stringWithFormat:format, ## __VA_ARGS__])\n\n#else\n\n#define DLOG(format, ...)\n\n#endif"
+}

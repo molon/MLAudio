@@ -1,0 +1,18 @@
+#ifdef __OBJC__
+#import <UIKit/UIKit.h>
+#endif
+
+#import "Pods-environment.h"
+
+#ifdef DEBUG
+
+#define DLOG(format, ...)                   \
+NSLog(@"\n%s:%d\n%@",               \
+__PRETTY_FUNCTION__, __LINE__,      \
+[NSString stringWithFormat:format, ## __VA_ARGS__])
+
+#else
+
+#define DLOG(format, ...)
+
+#endif
