@@ -40,5 +40,7 @@ typedef NS_ENUM(NSUInteger, MLAudioRecordButtonStatus) {
 @property (nonatomic, copy) UIImage *(^imageBlock)(MLAudioRecordButtonStatus status,MLAudioRecordButton *button);
 @property (nonatomic, copy) NSString *(^titleBock)(MLAudioRecordButtonStatus status,MLAudioRecordButton *button);
 
+//外部代码停止
+- (void)stopRecordingWithCancel:(BOOL)cancel;
 
 @end

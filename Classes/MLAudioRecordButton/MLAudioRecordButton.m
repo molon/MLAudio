@@ -55,7 +55,7 @@
             
             if (!sSelf.isStopBecauseCancel) {
                 NSTimeInterval duration = [AmrPlayerReader durationOfAmrFilePath:sSelf.amrWriter.filePath];
-                if (duration<self.minValidDuration) {
+                if (duration<sSelf.minValidDuration) {
                     if (sSelf.didRecordTooShortAudioBlock) {
                         sSelf.didRecordTooShortAudioBlock([NSURL fileURLWithPath:sSelf.amrWriter.filePath],duration,sSelf);
                     }
@@ -298,6 +298,6 @@
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         [self.recorder stopRecording];
     });
-    
 }
+
 @end

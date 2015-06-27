@@ -52,6 +52,7 @@
 
 - (void)dealloc
 {
+    //DLOG(@"dealloc %@",NSStringFromClass([self class]));
     [self.tipsView hide];
 }
 

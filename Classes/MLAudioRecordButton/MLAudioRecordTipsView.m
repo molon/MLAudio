@@ -45,8 +45,9 @@
 
 - (void)dealloc
 {
-    NSLog(@"dealloc tipsView");
+    //DLOG(@"dealloc %@",NSStringFromClass([self class]));
 }
+
 #pragma mark - getter
 - (UILabel *)tipsLabel
 {
