@@ -278,7 +278,7 @@
         return kMinDefaultWidth;
     }
     
-    CGFloat width = kMinDefaultWidth + floor(self.duration+0.5f)*5.0f;
+    CGFloat width = kMinDefaultWidth + (self.duration+0.5f)*5.0f;
     if (width>kMaxWidth) {
         width = kMaxWidth;
     }

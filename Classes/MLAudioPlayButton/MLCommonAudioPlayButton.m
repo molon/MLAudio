@@ -126,7 +126,7 @@
 {
     [super layoutSubviews];
     
-#define kVoicePlaySignSideLength 20.0f
+#define kVoicePlaySignSideLength 17.0f
     if (self.locationRight) {
         self.playingSignImageView.frame = CGRectMake(self.frame.size.width-kVoicePlaySignSideLength-15.0f, (self.frame.size.height-kVoicePlaySignSideLength)/2, kVoicePlaySignSideLength, kVoicePlaySignSideLength);
     }else{
