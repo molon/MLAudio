@@ -143,8 +143,15 @@
 {
     _duration = duration;
     
+    if (self.durationChangedBlock) {
+        self.durationChangedBlock(duration,self);
+    }
+    
     if (self.preferredWidthChangedBlock) {
-        self.preferredWidthChangedBlock([self preferredWidth],self);
+        CGFloat preferredWidth = [self preferredWidth];
+        if (self.frame.size.width!= preferredWidth) {
+            self.preferredWidthChangedBlock(preferredWidth,self);
+        }
     }
 }
 

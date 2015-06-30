@@ -32,6 +32,7 @@ typedef NS_OPTIONS(NSUInteger, MLAudioPlayButtonState) {
 
 @property (nonatomic, assign) NSTimeInterval duration;
 
+@property (nonatomic, copy) void(^durationChangedBlock)(double duration,MLAudioPlayButton *button);
 @property (nonatomic, copy) void(^preferredWidthChangedBlock)(CGFloat preferredWidth,MLAudioPlayButton *button);
 @property (nonatomic, copy) void(^audioWillPlayBlock)(MLAudioPlayButton *button);
 @property (nonatomic, copy) void(^didReceivePlayErrorBlock)(NSError *error,MLAudioPlayButton *button);
