@@ -14,8 +14,6 @@ typedef NS_ENUM(NSUInteger, MLAudioRecordButtonStatus) {
     MLAudioRecordButtonStatusUpToCancel, //松开 取消
 };
 
-#define kAudioCacheDirName @"MLAudioRecordCache"
-
 @interface MLAudioRecordButton : UIButton
 
 @property (readonly, nonatomic, assign) MLAudioRecordButtonStatus status;
@@ -26,6 +24,8 @@ typedef NS_ENUM(NSUInteger, MLAudioRecordButtonStatus) {
 @property (nonatomic, assign) NSTimeInterval maxDuration;
 //最大的文件大小，到这个大小自动停止，默认是256KB
 @property (nonatomic, assign) NSInteger maxFileSize;
+
+@property (nonatomic, copy) NSURL *(^newFilePathBlock)(MLAudioRecordButton *button);
 
 @property (nonatomic, copy) void(^didRecordTooShortAudioBlock)(NSURL *filePath,NSTimeInterval duration,MLAudioRecordButton *button);
 @property (nonatomic, copy) void(^didRecordAudioBlock)(NSURL *filePath,NSTimeInterval duration,MLAudioRecordButton *button);

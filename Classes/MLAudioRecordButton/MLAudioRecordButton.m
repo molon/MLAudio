@@ -23,6 +23,8 @@
 
 @property (nonatomic, assign) BOOL isStopBecauseCancel;
 
+@property (nonatomic, strong) NSURL *currentFilePath;
+
 @end
 
 @implementation MLAudioRecordButton
@@ -54,14 +56,14 @@
             sSelf.status = MLAudioRecordButtonStatusNormal;
             
             if (!sSelf.isStopBecauseCancel) {
-                NSTimeInterval duration = [AmrPlayerReader durationOfAmrFilePath:sSelf.amrWriter.filePath];
+                NSTimeInterval duration = [AmrPlayerReader durationOfAmrFilePath:[sSelf.currentFilePath path]];
                 if (duration<sSelf.minValidDuration) {
                     if (sSelf.didRecordTooShortAudioBlock) {
-                        sSelf.didRecordTooShortAudioBlock([NSURL fileURLWithPath:sSelf.amrWriter.filePath],duration,sSelf);
+                        sSelf.didRecordTooShortAudioBlock(sSelf.currentFilePath,duration,sSelf);
                     }
                 }else{
                     if (sSelf.didRecordAudioBlock) {
-                        sSelf.didRecordAudioBlock([NSURL fileURLWithPath:sSelf.amrWriter.filePath],duration,sSelf);
+                        sSelf.didRecordAudioBlock(sSelf.currentFilePath,duration,sSelf);
                     }
                 }
             }
@@ -210,24 +212,6 @@
     }
 }
 
-- (NSString*)filePathForKey:(NSString*)key
-{
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    NSString *cacheDir = [paths[0] stringByAppendingPathComponent:kAudioCacheDirName];
-    
-    if (![[NSFileManager defaultManager] fileExistsAtPath:cacheDir]){
-        NSError *error = nil;
-        if(![[NSFileManager defaultManager] createDirectoryAtPath:cacheDir withIntermediateDirectories:YES attributes:nil error:&error]){
-            if (self.didReceiveErrorBlock) {
-                self.didReceiveErrorBlock(error,self);
-            }
-            return nil;
-        }
-    }
-    
-    return [cacheDir stringByAppendingPathComponent:key];
-}
-
 #pragma mark - event
 - (void)dragEnter
 {
@@ -261,12 +245,12 @@
     //必须在此重置下
     self.isStopBecauseCancel = NO;
     
-    //用当前时间做文件名
-    time_t curUnixTime = 0;
-    time(&curUnixTime);
-    NSString *key = [NSString stringWithFormat:@"%ld-%d.amr", curUnixTime,arc4random()%10000];
-    NSString *filePath = [self filePathForKey:key];
-    self.amrWriter.filePath = filePath;
+    NSAssert(self.newFilePathBlock, @"必须设置newFilePathBlock");
+    
+    self.currentFilePath = self.newFilePathBlock(self);
+    NSAssert([self.currentFilePath isFileURL], @"newFilePathBlock必须返回一个文件路径");
+    
+    self.amrWriter.filePath = [self.currentFilePath path];
     
     [self.recorder startRecording];
     self.meterObserver.audioQueue = self.recorder->_audioQueue;

@@ -186,6 +186,19 @@
 - (void)setAudioWithURL:(NSURL *)url success:(void (^)(NSURLRequest *request, NSHTTPURLResponse *response, NSURL* audioPath))success
                        failure:(void (^)(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error))failure
 {
+    //这里搞是因为我有可能传递进来的url是NSURL的子类，然后这个url如果经过[NSMutableURLRequest requestWithURL:url]再拿出来的话就被其内部转化成NSURL了。
+    if ([url isFileURL]) {
+        self.audioURL = url;
+        [self cancelAudioRequestOperation];
+        
+        if (success) {
+            success(nil,nil,self.audioURL);
+        }else{
+            self.filePath = self.audioURL;
+        }
+        return;
+    }
+    
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     [request addValue:@"*/*" forHTTPHeaderField:@"Accept"];
     
