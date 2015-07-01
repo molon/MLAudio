@@ -13,7 +13,9 @@
 
 #define AMR_MAGIC_NUMBER "#!AMR\n"
 
-#define PCM_FRAME_SIZE 160 // 8khz 8000*0.02=160
+#define SAMPLERATE 8000
+
+#define PCM_FRAME_SIZE (int)(SAMPLERATE*0.02) // 8000是采样率 8000*0.02=160
 #define MAX_AMR_FRAME_SIZE 32
 #define AMR_FRAME_COUNT_PER_SECOND 50
 int amrEncodeMode[] = {4750, 5150, 5900, 6700, 7400, 7950, 10200, 12200}; // amr 编码方式
@@ -167,7 +169,7 @@ long filesize(FILE *stream)
 - (AudioStreamBasicDescription)customAudioFormatAfterOpenFile
 {
     AudioStreamBasicDescription format;
-    format.mSampleRate = 8000;
+    format.mSampleRate = SAMPLERATE;
     format.mChannelsPerFrame = 1;
 	format.mFormatID = kAudioFormatLinearPCM;
     format.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;

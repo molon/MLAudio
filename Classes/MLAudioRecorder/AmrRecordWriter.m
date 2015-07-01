@@ -11,6 +11,8 @@
 //amr编码
 #import "interf_enc.h"
 
+#define SAMPLERATE 8000
+#define PCM_FRAME_SIZE (int)(SAMPLERATE*0.02)
 @interface AmrRecordWriter()
 {
     FILE *_file;
@@ -23,6 +25,19 @@
 @end
 
 @implementation AmrRecordWriter
+
+- (AudioStreamBasicDescription)customAudioFormatBeforeCreateFile
+{
+    AudioStreamBasicDescription format;
+    format.mSampleRate = SAMPLERATE;
+    format.mChannelsPerFrame = 1;
+    format.mFormatID = kAudioFormatLinearPCM;
+    format.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
+    format.mBitsPerChannel = 16;
+    format.mBytesPerPacket = format.mBytesPerFrame = (format.mBitsPerChannel / 8) * format.mChannelsPerFrame;
+    format.mFramesPerPacket = 1;
+    return format;
+}
 
 - (BOOL)createFileWithRecorder:(MLAudioRecorder*)recoder;
 {
@@ -80,18 +95,19 @@
         DLOG(@"不是偶数");
     }
     
-    unsigned char buffer[320];
-    for (int i =0; i < pcmLen ;i+=160*2) {
+    unsigned char buffer[PCM_FRAME_SIZE*2];
+    for (int i =0; i < pcmLen ;i+=PCM_FRAME_SIZE*2) {
         short *pPacket = (short *)((unsigned char*)recordingData+i);
-        if (pcmLen-i<160*2){
+        if (pcmLen-i<PCM_FRAME_SIZE*2){
             continue; //不是一个完整的就拜拜
         }
         
         memset(buffer, 0, sizeof(buffer));
         //encode
-        int recvLen = Encoder_Interface_Encode(_destate,MR515,pPacket,buffer,0);
+        int recvLen = Encoder_Interface_Encode(_destate,MR795,pPacket,buffer,0);
         if (recvLen>0) {
             if (self.maxFileSize>0){
+//                DLOG(@"%ld",self.recordedFileSize+recvLen);
                 if(self.recordedFileSize+recvLen>self.maxFileSize){
                     //                    DLOG(@"录音文件过大");
                     dispatch_async(dispatch_get_main_queue(), ^{
