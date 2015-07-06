@@ -239,24 +239,28 @@
 
 - (void)down
 {
-    //录音和播放肯定不应该同时啦，把已有播放停止
-    [[MLAmrPlayManager manager]stopPlaying];
+    void (^block)() = ^{
+        //录音和播放肯定不应该同时啦，把已有播放停止
+        [[MLAmrPlayManager manager]stopPlaying];
+        
+        //必须在此重置下
+        self.isStopBecauseCancel = NO;
+        
+        NSAssert(self.newFilePathBlock, @"必须设置newFilePathBlock");
+        
+        self.currentFilePath = self.newFilePathBlock(self);
+        NSAssert([self.currentFilePath isFileURL], @"newFilePathBlock必须返回一个文件路径");
+        
+        self.amrWriter.filePath = [self.currentFilePath path];
+        
+        [self.recorder startRecording];
+        self.meterObserver.audioQueue = self.recorder->_audioQueue;
+        
+        //松开 结束
+        self.status = MLAudioRecordButtonStatusUpToComplete;
+    };
     
-    //必须在此重置下
-    self.isStopBecauseCancel = NO;
-    
-    NSAssert(self.newFilePathBlock, @"必须设置newFilePathBlock");
-    
-    self.currentFilePath = self.newFilePathBlock(self);
-    NSAssert([self.currentFilePath isFileURL], @"newFilePathBlock必须返回一个文件路径");
-    
-    self.amrWriter.filePath = [self.currentFilePath path];
-    
-    [self.recorder startRecording];
-    self.meterObserver.audioQueue = self.recorder->_audioQueue;
-    
-    //松开 结束
-    self.status = MLAudioRecordButtonStatusUpToComplete;
+    [MLAudioRecorder checkAudioAuthStatusWithBlock:block];
 }
 
 - (void)upInside

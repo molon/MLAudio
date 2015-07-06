@@ -111,7 +111,44 @@ void inputBufferHandler(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRe
     }
 }
 
+#define SHOW_SIMPLE_TIPS(m) [[[UIAlertView alloc] initWithTitle:@"" message:(m) delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil]show];
 - (void)startRecording
+{
+    void (^block)() = ^{
+        [self startRecordingAfterCheckAudioAuthStatus];
+    };
+    [MLAudioRecorder checkAudioAuthStatusWithBlock:block];
+}
+
++ (void)checkAudioAuthStatusWithBlock:(void (^)())block
+{
+    //检测麦克风权限
+    NSString *mediaType = AVMediaTypeAudio;
+    AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:mediaType];
+    NSString *tips = @"请在设备的\"设置-隐私-麦克风\"中允许访问麦克风。";
+    
+    if(authStatus == AVAuthorizationStatusRestricted){
+        SHOW_SIMPLE_TIPS(@"您的设备似乎不支持麦克风");
+    }else if (authStatus == AVAuthorizationStatusDenied){
+        SHOW_SIMPLE_TIPS(tips);
+    }else if (authStatus == AVAuthorizationStatusAuthorized){
+        block();
+    }else if (authStatus == AVAuthorizationStatusNotDetermined){
+        //TODO: 良好的设计可以先alert提示一下，然后点了确定之后再requestAccessForMediaType
+        [AVCaptureDevice requestAccessForMediaType:mediaType completionHandler:^(BOOL granted) {
+            if(granted){//点击允许访问时调用
+                block();
+            }else {
+                SHOW_SIMPLE_TIPS(tips);
+            }
+        }];
+    }else{
+        //其他的不知道是什么鬼东西，直接性的继续吧
+        block();
+    }
+}
+
+- (void)startRecordingAfterCheckAudioAuthStatus
 {
     NSAssert(!self.isRecording, @"录音必须先停止上一个才可开始新的");
     
