@@ -120,9 +120,10 @@ typedef NS_OPTIONS(NSUInteger, MLAudioRecorderErrorCode) {
 /**
  *  对外开放的方便检测麦克风权限的方法
  *
- *  @param block 回调
+ *  @param continueBlock OK之后继续回调
+ *  @param grantedBlock  初次被授权成功之后的回调
  */
-+ (void)checkAudioAuthStatusWithBlock:(void (^)())block;
++ (void)checkAudioAuthStatusWithContinueBlock:(void (^)())continueBlock grantedBlock:(void (^)())grantedBlock;
 
 
 @end

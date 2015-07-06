@@ -13,6 +13,7 @@ s.source_files  = 'Classes/**/*.{h,m}'
 s.vendored_frameworks = 'Classes/mp3_en_de/lame.framework'
 s.vendored_libraries = 'Classes/amr_en_de/lib/*.{a}'
 s.resource = "Classes/**/*.bundle"
+s.frameworks = 'AVFoundation'
 s.requires_arc  = true
 
 s.dependency 'AFNetworking', '~> 2.5.4'

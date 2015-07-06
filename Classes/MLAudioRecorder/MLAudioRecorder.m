@@ -117,10 +117,10 @@ void inputBufferHandler(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRe
     void (^block)() = ^{
         [self startRecordingAfterCheckAudioAuthStatus];
     };
-    [MLAudioRecorder checkAudioAuthStatusWithBlock:block];
+    [MLAudioRecorder checkAudioAuthStatusWithContinueBlock:block grantedBlock:block];
 }
 
-+ (void)checkAudioAuthStatusWithBlock:(void (^)())block
++ (void)checkAudioAuthStatusWithContinueBlock:(void (^)())continueBlock grantedBlock:(void (^)())grantedBlock
 {
     //检测麦克风权限
     NSString *mediaType = AVMediaTypeAudio;
@@ -131,26 +131,33 @@ void inputBufferHandler(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRe
         SHOW_SIMPLE_TIPS(@"您的设备似乎不支持麦克风");
     }else if (authStatus == AVAuthorizationStatusDenied){
         SHOW_SIMPLE_TIPS(tips);
-    }else if (authStatus == AVAuthorizationStatusAuthorized){
-        block();
     }else if (authStatus == AVAuthorizationStatusNotDetermined){
         //TODO: 良好的设计可以先alert提示一下，然后点了确定之后再requestAccessForMediaType
         [AVCaptureDevice requestAccessForMediaType:mediaType completionHandler:^(BOOL granted) {
-            if(granted){//点击允许访问时调用
-                block();
-            }else {
-                SHOW_SIMPLE_TIPS(tips);
-            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if(granted){//点击允许访问时调用
+                    if (grantedBlock) {
+                        grantedBlock();
+                    }
+                }else {
+                    SHOW_SIMPLE_TIPS(tips);
+                }
+            });
         }];
     }else{
-        //其他的不知道是什么鬼东西，直接性的继续吧
-        block();
+        //其他的不知道是什么鬼东西，直接性的继续吧,这里面包括AVAuthorizationStatusAuthorized
+        if (continueBlock) {
+            continueBlock();
+        }
     }
 }
 
 - (void)startRecordingAfterCheckAudioAuthStatus
 {
     NSAssert(!self.isRecording, @"录音必须先停止上一个才可开始新的");
+    if (self.isRecording) {
+        [self stopRecording];
+    }
     
     NSError *error = nil;
     //设置audio session的category
@@ -274,19 +281,19 @@ void inputBufferHandler(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRe
     //    DLOG(@"sampleRate:%f,通道数:%d",_recordFormat.mSampleRate,_recordFormat.mChannelsPerFrame);
     
     //设置format，怎么称呼不知道。
-	_recordFormat.mFormatID = inFormatID;
+    _recordFormat.mFormatID = inFormatID;
     
-	if (inFormatID == kAudioFormatLinearPCM){
+    if (inFormatID == kAudioFormatLinearPCM){
         //这个屌属性不知道干啥的。，
-		_recordFormat.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
+        _recordFormat.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
         //每个通道里，一帧采集的bit数目
-		_recordFormat.mBitsPerChannel = 16;
+        _recordFormat.mBitsPerChannel = 16;
         //结果分析: 8bit为1byte，即为1个通道里1帧需要采集2byte数据，再*通道数，即为所有通道采集的byte数目。
         //所以这里结果赋值给每帧需要采集的byte数目，然后这里的packet也等于一帧的数据。
         //至于为什么要这样。。。不知道。。。
-		_recordFormat.mBytesPerPacket = _recordFormat.mBytesPerFrame = (_recordFormat.mBitsPerChannel / 8) * _recordFormat.mChannelsPerFrame;
-		_recordFormat.mFramesPerPacket = 1;
-	}
+        _recordFormat.mBytesPerPacket = _recordFormat.mBytesPerFrame = (_recordFormat.mBitsPerChannel / 8) * _recordFormat.mChannelsPerFrame;
+        _recordFormat.mFramesPerPacket = 1;
+    }
 }
 
 - (void)postAErrorWithErrorCode:(MLAudioRecorderErrorCode)code andDescription:(NSString*)description
