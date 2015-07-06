@@ -210,8 +210,7 @@
 {
     self.audioURL = [urlRequest URL];
 
-    //无论如何，该去掉的就得去掉
-//#warning 这里有个弊端，例如上一个设置了autoPlay，然后tableViewCell重用后，会取消，然后肯定上面那个就不能自动播放了，似乎也不适合处理这个情况。回头再考虑吧。不过有个应该考虑下，下一半还没下完，然后被重用了,这样之前的下载就被丢弃了！，AFNetworking的图片处理也有类似情况
+//TODO: 这里有个弊端，例如上一个设置了autoPlay，然后tableViewCell重用后，会取消，然后肯定上面那个就不能自动播放了，似乎也不适合处理这个情况。回头再考虑吧。不过有个应该考虑下，下一半还没下完，然后被重用了,这样之前的下载就被丢弃了！，AFNetworking的图片处理也有类似情况
     self.filePath = nil;
     [self cancelAudioRequestOperation];
     
