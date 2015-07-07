@@ -260,8 +260,15 @@
         self.status = MLAudioRecordButtonStatusUpToComplete;
     };
     
-    //初次授权之后不需要进行任何事情，因为点击是否允许的时候，手指头肯定不放到录音按钮上了
-    [MLAudioRecorder checkAudioAuthStatusWithContinueBlock:block grantedBlock:nil];
+    void (^grantedBlock)() = ^{
+        //初次授权之后因为点击是否允许的时候，手指头可能不放到录音按钮上了，所以我们这里需要判断下
+        if (self.state != UIControlStateHighlighted) {
+            return;
+        }
+        block();
+    };
+    
+    [MLAudioRecorder checkAudioAuthStatusWithContinueBlock:block grantedBlock:grantedBlock];
 }
 
 - (void)upInside
