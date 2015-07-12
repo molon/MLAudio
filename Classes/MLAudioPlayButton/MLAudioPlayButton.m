@@ -76,7 +76,7 @@
     if (![userInfo[@"filePath"] isEqual:self.filePath]) {
         return;
     }
-//    DLOG(@"发现音频播放停止:%@,如果发现此处执行多次不用在意。那可能是因为tableView复用的关系",[self.filePath path]);
+    //    DLOG(@"发现音频播放停止:%@,如果发现此处执行多次不用在意。那可能是因为tableView复用的关系",[self.filePath path]);
     
 }
 
@@ -112,7 +112,7 @@
 #pragma mark - getter
 - (BOOL)isAudioPlaying
 {
-	if ([MLAmrPlayManager manager].isPlaying&&[[MLAmrPlayManager manager].filePath isEqual:self.filePath]) {
+    if ([MLAmrPlayManager manager].isPlaying&&[[MLAmrPlayManager manager].filePath isEqual:self.filePath]) {
         return YES;
     }
     return NO;
@@ -123,20 +123,35 @@
 {
     _filePath = filePath;
     
+    BOOL isSetedDuration = NO;
     if (filePath) {
         self.audioState = MLAudioPlayButtonStateNormal;
-        if (self.duration<=0) {
-            self.duration = [MLAmrPlayManager durationOfAmrFilePath:filePath];
+        if (!self.dontAutoSetDuration) {
+            if (self.duration<=0) {
+                self.duration = [MLAmrPlayManager durationOfAmrFilePath:filePath];
+                isSetedDuration = YES;
+            }
         }
     }else{
         self.audioState = MLAudioPlayButtonStateNone;
-        self.duration = 0.0f;
+        if (!self.dontAutoSetDuration) {
+            self.duration = 0.0f;
+            isSetedDuration = YES;
+        }
+    }
+    
+    if (!isSetedDuration) {
+        [self updatePreferredWidth];
     }
 }
 
 - (void)setAudioState:(MLAudioPlayButtonState)audioState
 {
     _audioState = audioState;
+    
+    if (self.audioStateChangedBlock) {
+        self.audioStateChangedBlock(audioState,self);
+    }
 }
 
 - (void)setDuration:(NSTimeInterval)duration
@@ -147,12 +162,7 @@
         self.durationChangedBlock(duration,self);
     }
     
-    if (self.preferredWidthChangedBlock) {
-        CGFloat preferredWidth = [self preferredWidth];
-        if (self.frame.size.width!= preferredWidth) {
-            self.preferredWidthChangedBlock(preferredWidth,self);
-        }
-    }
+    [self updatePreferredWidth];
 }
 
 #pragma mark - outcall
@@ -184,7 +194,7 @@
 }
 
 - (void)setAudioWithURL:(NSURL *)url success:(void (^)(NSURLRequest *request, NSHTTPURLResponse *response, NSURL* audioPath))success
-                       failure:(void (^)(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error))failure
+                failure:(void (^)(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error))failure
 {
     //这里搞是因为我有可能传递进来的url是NSURL的子类，然后这个url如果经过[NSMutableURLRequest requestWithURL:url]再拿出来的话就被其内部转化成NSURL了。
     if ([url isFileURL]) {
@@ -209,8 +219,8 @@
                        failure:(void (^)(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error))failure
 {
     self.audioURL = [urlRequest URL];
-
-//TODO: 这里有个弊端，例如上一个设置了autoPlay，然后tableViewCell重用后，会取消，然后肯定上面那个就不能自动播放了，似乎也不适合处理这个情况。回头再考虑吧。不过有个应该考虑下，下一半还没下完，然后被重用了,这样之前的下载就被丢弃了！，AFNetworking的图片处理也有类似情况
+    
+    //TODO: 这里有个弊端，例如上一个设置了autoPlay，然后tableViewCell重用后，会取消，然后肯定上面那个就不能自动播放了，似乎也不适合处理这个情况。回头再考虑吧。不过有个应该考虑下，下一半还没下完，然后被重用了,这样之前的下载就被丢弃了！，AFNetworking的图片处理也有类似情况
     self.filePath = nil;
     [self cancelAudioRequestOperation];
     
@@ -246,29 +256,35 @@
         self.af_dataRequestOperation = [[AFHTTPRequestOperation alloc] initWithRequest:urlRequest];
         self.af_dataRequestOperation.responseSerializer = [MLDataResponseSerializer shareInstance];
         [self.af_dataRequestOperation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-            static const char* amrHeader = AMR_MAGIC_NUMBER;
-            char magic[8];
-            [responseObject getBytes:magic length:strlen(amrHeader)];
-            
-            if (strncmp(magic, amrHeader, strlen(amrHeader)))
-            {
-                NSError *error = [NSError errorWithDomain:kMLAudioPlayButtonErrorDomain code:MLAudioPlayButtonErrorCodeWrongAudioFomrat userInfo:@{NSLocalizedDescriptionKey:@"音频非amr文件"}];
-                if (failure) {
-                    failure(urlRequest,operation.response,error);
-                }
-                return;
-            }
-            
             __strong __typeof(weakSelf)strongSelf = weakSelf;
-            if ([[urlRequest URL] isEqual:[operation.request URL]]) {
+            if ([[urlRequest URL] isEqual:[strongSelf.af_dataRequestOperation.request URL]]) {
+                
+                static const char* amrHeader = AMR_MAGIC_NUMBER;
+                char magic[8];
+                [responseObject getBytes:magic length:strlen(amrHeader)];
+                
+                if (strncmp(magic, amrHeader, strlen(amrHeader)))
+                {
+                    strongSelf.audioState = MLAudioPlayButtonStateDownloadFailed;
+                    NSError *error = [NSError errorWithDomain:kMLAudioPlayButtonErrorDomain code:MLAudioPlayButtonErrorCodeWrongAudioFormat userInfo:@{NSLocalizedDescriptionKey:@"音频非amr文件"}];
+                    if (failure) {
+                        failure(urlRequest,operation.response,error);
+                    }
+                    return;
+                }
+                
                 //写入文件
                 [[[strongSelf class] sharedDataCache] cacheData:responseObject forRequest:urlRequest afterCacheInFileSuccess:^(NSURL *filePath) {
+                    //                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    
                     if (success) {
                         success(urlRequest, operation.response, filePath);
                     } else if (filePath) {
                         strongSelf.filePath = filePath;
                     }
+                    //                    });
                 } failure:^{
+                    strongSelf.audioState = MLAudioPlayButtonStateDownloadFailed;
                     NSError *error = [NSError errorWithDomain:kMLAudioPlayButtonErrorDomain code:MLAudioPlayButtonErrorCodeCacheFailed userInfo:@{NSLocalizedDescriptionKey:@"写入音频缓存文件失败"}];
                     if (failure) {
                         failure(urlRequest, operation.response, error);
@@ -276,7 +292,9 @@
                 }];
             }
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            if ([[urlRequest URL] isEqual:[operation.request URL]]) {
+            __strong __typeof(weakSelf)strongSelf = weakSelf;
+            if ([[urlRequest URL] isEqual:[strongSelf.af_dataRequestOperation.request URL]]) {
+                strongSelf.audioState = MLAudioPlayButtonStateDownloadFailed;
                 if (failure) {
                     failure(urlRequest, operation.response, error);
                 }
@@ -302,6 +320,16 @@
         width = kMaxWidth;
     }
     return width;
+}
+
+- (void)updatePreferredWidth
+{
+    if (self.preferredWidthChangedBlock) {
+        CGFloat preferredWidth = [self preferredWidth];
+        if (self.frame.size.width!= preferredWidth) {
+            self.preferredWidthChangedBlock(preferredWidth,self);
+        }
+    }
 }
 
 @end

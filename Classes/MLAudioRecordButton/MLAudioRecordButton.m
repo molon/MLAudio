@@ -107,6 +107,8 @@
 {
     self.meterObserver.audioQueue = nil;
     [self.recorder stopRecording];
+    
+    [self restoreDelayBegin];
 }
 
 #pragma mark - gesture pass
@@ -131,6 +133,11 @@
 {
     [super willMoveToWindow:newWindow];
     
+    [self restoreDelayBegin];
+}
+
+- (void)restoreDelayBegin
+{
     for (UIGestureRecognizer *ges in self.needRestoreDelayBeginGestures) {
         ges.delaysTouchesBegan = YES;
     }

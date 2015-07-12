@@ -15,13 +15,14 @@
  */
 typedef NS_OPTIONS(NSUInteger, MLAudioPlayButtonErrorCode) {
     MLAudioPlayButtonErrorCodeCacheFailed = 0, //写入缓存文件失败
-    MLAudioPlayButtonErrorCodeWrongAudioFomrat,//音频文件格式错误
+    MLAudioPlayButtonErrorCodeWrongAudioFormat,//音频文件格式错误
 };
 
 typedef NS_OPTIONS(NSUInteger, MLAudioPlayButtonState) {
     MLAudioPlayButtonStateNone = 0,
     MLAudioPlayButtonStateNormal,
     MLAudioPlayButtonStateDownloading,
+    MLAudioPlayButtonStateDownloadFailed,
 };
 
 @interface MLAudioPlayButton : UIButton
@@ -30,9 +31,13 @@ typedef NS_OPTIONS(NSUInteger, MLAudioPlayButtonState) {
 @property (nonatomic, assign,readonly) MLAudioPlayButtonState audioState;
 @property (nonatomic, assign,readonly) BOOL isAudioPlaying;
 
+//是否自动读取duration
+@property (nonatomic, assign) BOOL dontAutoSetDuration;
+
 @property (nonatomic, assign) NSTimeInterval duration;
 
 @property (nonatomic, copy) void(^durationChangedBlock)(double duration,MLAudioPlayButton *button);
+@property (nonatomic, copy) void(^audioStateChangedBlock)(MLAudioPlayButtonState audioState,MLAudioPlayButton *button);
 @property (nonatomic, copy) void(^preferredWidthChangedBlock)(CGFloat preferredWidth,MLAudioPlayButton *button);
 @property (nonatomic, copy) void(^audioWillPlayBlock)(MLAudioPlayButton *button);
 @property (nonatomic, copy) void(^didReceivePlayErrorBlock)(NSError *error,MLAudioPlayButton *button);
