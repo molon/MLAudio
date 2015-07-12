@@ -25,6 +25,9 @@
 
 @property (nonatomic, strong) NSURL *currentFilePath;
 
+//其实一般就是第一个是window里的一个影响bottom touchbegin延迟的手势和拖返手势
+@property (nonatomic, strong) NSMutableArray *needRestoreDelayBeginGestures;
+
 @end
 
 @implementation MLAudioRecordButton
@@ -106,7 +109,43 @@
     [self.recorder stopRecording];
 }
 
+#pragma mark - gesture pass
+- (void)didMoveToWindow
+{
+    [super didMoveToWindow];
+    
+    UIView *superView = [self superview];
+    while (superView) {
+        for (UIGestureRecognizer *ges in superView.gestureRecognizers) {
+            if (ges.delaysTouchesBegan) {
+                [self.needRestoreDelayBeginGestures addObject:ges];
+                ges.delaysTouchesBegan = NO;
+            }
+        }
+        
+        superView = [superView superview];
+    }
+}
+
+- (void)willMoveToWindow:(UIWindow *)newWindow
+{
+    [super willMoveToWindow:newWindow];
+    
+    for (UIGestureRecognizer *ges in self.needRestoreDelayBeginGestures) {
+        ges.delaysTouchesBegan = YES;
+    }
+    
+    [self.needRestoreDelayBeginGestures removeAllObjects];
+}
+
 #pragma mark - getter
+- (NSMutableArray *)needRestoreDelayBeginGestures
+{
+    if (!_needRestoreDelayBeginGestures) {
+        _needRestoreDelayBeginGestures = [NSMutableArray new];
+    }
+    return _needRestoreDelayBeginGestures;
+}
 
 - (MLAudioRecorder *)recorder
 {
