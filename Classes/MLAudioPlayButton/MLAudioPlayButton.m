@@ -199,6 +199,7 @@
     //这里搞是因为我有可能传递进来的url是NSURL的子类，然后这个url如果经过[NSMutableURLRequest requestWithURL:url]再拿出来的话就被其内部转化成NSURL了。
     if ([url isFileURL]) {
         self.audioURL = url;
+        self.filePath = nil;
         [self cancelAudioRequestOperation];
         
         if (success) {

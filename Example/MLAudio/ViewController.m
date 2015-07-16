@@ -10,6 +10,8 @@
 #import "MLTipsAudioRecordButton.h"
 #import "MLCommonAudioPlayButton.h"
 
+#define kAudioDirName @"audioData"
+
 @interface ViewController ()
 
 @property (nonatomic, strong) MLTipsAudioRecordButton *recordButton;
@@ -80,6 +82,28 @@
         
         [button setDidRecordAudioBlock:^(NSURL *url, NSTimeInterval duration, MLAudioRecordButton *button) {
             [weakSelf.playLocalButton setAudioWithURL:url];
+        }];
+        
+        [button setNewFilePathBlock:^NSURL *(MLAudioRecordButton *button) {
+            NSSearchPathDirectory searchDir = NSDocumentDirectory;
+            NSSearchPathDomainMask searchMask = NSUserDomainMask;
+            
+            //这里检测是否存在此文件夹，不存在就建立
+            NSArray *paths = NSSearchPathForDirectoriesInDomains(searchDir, searchMask, YES);
+            NSString *audioDir = [[paths firstObject] stringByAppendingPathComponent:kAudioDirName];
+            
+            if (![[NSFileManager defaultManager] fileExistsAtPath:audioDir]){
+                if([[NSFileManager defaultManager] createDirectoryAtPath:audioDir withIntermediateDirectories:YES attributes:nil error:NULL]){
+//                    [[NSFileManager defaultManager]addSkipBackupAttributeToItemAtPath:audioDir];
+                }
+            }
+            
+            //设置一个新文件名字
+            time_t curUnixTime = 0;
+            time(&curUnixTime);
+            NSString *key = [NSString stringWithFormat:@"%ld-%ld", curUnixTime,(NSInteger)(arc4random()%10000)];
+            NSURL *url = [NSURL fileURLWithPath:[audioDir stringByAppendingPathComponent:key] isDirectory:NO];
+            return url;
         }];
         _recordButton = button;
         

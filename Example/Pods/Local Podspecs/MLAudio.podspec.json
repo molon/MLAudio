@@ -16,6 +16,7 @@
   "vendored_frameworks": "Classes/mp3_en_de/lame.framework",
   "vendored_libraries": "Classes/amr_en_de/lib/*.{a}",
   "resources": "Classes/**/*.bundle",
+  "frameworks": "AVFoundation",
   "requires_arc": true,
   "dependencies": {
     "AFNetworking": [
