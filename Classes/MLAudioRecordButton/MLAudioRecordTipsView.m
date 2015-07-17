@@ -175,11 +175,11 @@
     self.warningText = nil;
     
     //设置下音量图像
-    NSUInteger level = floor((volume*10)/(10/8))+1;
+    NSInteger level = floor((volume*10)/(10/8))+1;
     level = MIN(8, level);
     level = MAX(level, 1);
     
-    NSString *imageName = [NSString stringWithFormat:@"RecordingSignal00%ld",level];
+    NSString *imageName = [NSString stringWithFormat:@"RecordingSignal00%ld",(long)level];
     self.volumeImageView.image = BUNDLEIMG(imageName);
     
     self.status = status;

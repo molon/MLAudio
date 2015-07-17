@@ -2,6 +2,11 @@ Pod::Spec.new do |s|
 s.name         = "MLAudio"
 s.version      = "1.0.0"
 s.summary      = "MLAudio"
+s.homepage	   = "https://github.com/molon/MLAudio"
+s.source 	   = {
+:git => "https://github.com/molon/MLAudio.git",
+:tag => "#{s.version}"
+}
 
 s.license      = { :type => 'MIT'}
 s.author       = { "molon" => "dudl@qq.com" }
