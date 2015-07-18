@@ -53,7 +53,7 @@
                 [[NSNotificationCenter defaultCenter]postNotificationName:MLAMRPLAYER_PLAY_RECEIVE_ERROR_NOTIFICATION object:nil userInfo:@{@"error":error,@"filePath":filePath}];
             });
         };
-        _player.receiveStoppedBlock = ^{
+        _player.receiveStoppedBlock = ^(BOOL playComplete){
             if (!weakSelf.filePath) {
                 return;
             }
@@ -61,7 +61,7 @@
             dispatch_async(dispatch_get_main_queue(), ^{
                 //因为下面的playWithFilePath方法是先stop然后start，如果不放到下一个runloop里的话，这里被通知的对象可能会执行一个新的playWithFilePath方法就造成了。 stop -> stop,start ->start的情况，就出BUG了。而放到下一个runloop里就不怕了。
                 //这里应该post 一个通知，通知音频播放完毕
-                [[NSNotificationCenter defaultCenter]postNotificationName:MLAMRPLAYER_PLAY_RECEIVE_STOP_NOTIFICATION object:nil userInfo:@{@"filePath":filePath}];
+                [[NSNotificationCenter defaultCenter]postNotificationName:MLAMRPLAYER_PLAY_RECEIVE_STOP_NOTIFICATION object:nil userInfo:@{@"filePath":filePath,@"playComplete":@(playComplete)}];
             });
         };
 	}
@@ -96,6 +96,8 @@
     [self.player stopPlaying];
     self.filePath = filePath;
     [self.player startPlaying];
+    
+    [[NSNotificationCenter defaultCenter]postNotificationName:MLAMRPLAYER_PLAY_RECEIVE_START_NOTIFICATION object:nil userInfo:@{@"filePath":self.filePath}];
 }
 
 - (void)stopPlaying

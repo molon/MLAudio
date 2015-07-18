@@ -32,6 +32,14 @@
 }
 
 #pragma mark - notification
+
+- (void)playReceiveStart:(NSNotification *)notification
+{
+    [super playReceiveStart:notification];
+    
+    [self updatePlayingSignImage];
+}
+
 - (void)playReceiveStop:(NSNotification*)notification
 {
     [super playReceiveStop:notification];
@@ -42,13 +50,6 @@
 - (void)playReceiveError:(NSNotification*)notification
 {
     [super playReceiveError:notification];
-    
-    [self updatePlayingSignImage];
-}
-
-- (void)click
-{
-    [super click];
     
     [self updatePlayingSignImage];
 }

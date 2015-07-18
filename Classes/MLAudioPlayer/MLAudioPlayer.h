@@ -11,7 +11,7 @@
 
 @class MLAudioPlayer;
 
-typedef void (^MLAudioPlayerReceiveStoppedBlock)();
+typedef void (^MLAudioPlayerReceiveStoppedBlock)(BOOL playComplete);
 typedef void (^MLAudioPlayerReceiveErrorBlock)(NSError *error);
 
 /**

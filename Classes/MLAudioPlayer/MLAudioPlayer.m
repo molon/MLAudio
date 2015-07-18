@@ -87,7 +87,7 @@ void isRunningProc (void * inUserData,AudioQueueRef inAQ,AudioQueuePropertyID in
 	
 	if ((result == noErr) && (!isRunning)&&player.isPlaying){
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.001f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [player stopPlaying];
+            [player stopPlayingWithPlayComplete:YES];
         });
     }
 }
@@ -215,7 +215,7 @@ void outBufferHandler(void *inUserData,AudioQueueRef inAQ,AudioQueueBufferRef in
 }
 
 
-- (void)stopPlaying
+- (void)stopPlayingWithPlayComplete:(BOOL)playComplete
 {
     if (!self.isPlaying) {
         return;
@@ -236,8 +236,13 @@ void outBufferHandler(void *inUserData,AudioQueueRef inAQ,AudioQueueBufferRef in
     }
     
     if(self.receiveStoppedBlock){
-        self.receiveStoppedBlock();
+        self.receiveStoppedBlock(playComplete);
     }
+}
+
+- (void)stopPlaying
+{
+    [self stopPlayingWithPlayComplete:NO];
 }
 
 

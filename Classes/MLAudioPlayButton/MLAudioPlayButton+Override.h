@@ -14,6 +14,7 @@
 
 //for override
 - (void)setUp;
+- (void)playReceiveStart:(NSNotification*)notification;
 - (void)playReceiveStop:(NSNotification*)notification;
 - (void)playReceiveError:(NSNotification*)notification;
 - (void)click;

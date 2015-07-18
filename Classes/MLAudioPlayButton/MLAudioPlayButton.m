@@ -58,6 +58,7 @@
 {
     self.audioState = MLAudioPlayButtonStateNone;
     
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playReceiveStart:) name:MLAMRPLAYER_PLAY_RECEIVE_START_NOTIFICATION object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playReceiveStop:) name:MLAMRPLAYER_PLAY_RECEIVE_STOP_NOTIFICATION object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playReceiveError:) name:MLAMRPLAYER_PLAY_RECEIVE_ERROR_NOTIFICATION object:nil];
     
@@ -70,15 +71,29 @@
 }
 
 #pragma mark - notification
+- (void)playReceiveStart:(NSNotification*)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    if (![userInfo[@"filePath"] isEqual:self.filePath]) {
+        return;
+    }
+    
+    if (self.audioWillPlayBlock) {
+        self.audioWillPlayBlock(self);
+    }
+}
+
 - (void)playReceiveStop:(NSNotification*)notification
 {
     NSDictionary *userInfo = notification.userInfo;
     if (![userInfo[@"filePath"] isEqual:self.filePath]) {
         return;
     }
+    
+    BOOL playComplete = [userInfo[@"playComplete"] boolValue];
     //    DLOG(@"发现音频播放停止:%@,如果发现此处执行多次不用在意。那可能是因为tableView复用的关系",[self.filePath path]);
     if (self.audioPlayStoppedBlock) {
-        self.audioPlayStoppedBlock(self);
+        self.audioPlayStoppedBlock(self,playComplete);
     }
 }
 
@@ -102,9 +117,6 @@
     }
     
     if (!self.isAudioPlaying) {
-        if (self.audioWillPlayBlock) {
-            self.audioWillPlayBlock(self);
-        }
         [[MLAmrPlayManager manager]playWithFilePath:self.filePath];
     }else{
         [[MLAmrPlayManager manager]stopPlaying];
@@ -184,9 +196,6 @@
         
         weakSelf.filePath = audioPath;
         if (autoPlay) {
-            if (weakSelf.audioWillPlayBlock) {
-                weakSelf.audioWillPlayBlock(weakSelf);
-            }
             [[MLAmrPlayManager manager]playWithFilePath:weakSelf.filePath];
         }
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
@@ -223,7 +232,6 @@
 {
     self.audioURL = [urlRequest URL];
     
-    //TODO: 这里有个弊端，例如上一个设置了autoPlay，然后tableViewCell重用后，会取消，然后肯定上面那个就不能自动播放了，似乎也不适合处理这个情况。回头再考虑吧。不过有个应该考虑下，下一半还没下完，然后被重用了,这样之前的下载就被丢弃了！，AFNetworking的图片处理也有类似情况
     self.filePath = nil;
     [self cancelAudioRequestOperation];
     
