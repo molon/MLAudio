@@ -86,7 +86,9 @@ void isRunningProc (void * inUserData,AudioQueueRef inAQ,AudioQueuePropertyID in
 	OSStatus result = AudioQueueGetProperty (inAQ, kAudioQueueProperty_IsRunning, &isRunning, &size);
 	
 	if ((result == noErr) && (!isRunning)&&player.isPlaying){
-        [player performSelector:@selector(stopPlaying) withObject:nil afterDelay:0.001f];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.001f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [player stopPlaying];
+        });
     }
 }
 
@@ -125,6 +127,9 @@ void outBufferHandler(void *inUserData,AudioQueueRef inAQ,AudioQueueBufferRef in
 - (void)startPlaying
 {
     NSAssert(!self.isPlaying, @"播放必须先停止上一个才可开始新的");
+    if (self.isPlaying) {
+        [self stopPlaying];
+    }
     
     NSError *error = nil;
     
@@ -222,7 +227,8 @@ void outBufferHandler(void *inUserData,AudioQueueRef inAQ,AudioQueueBufferRef in
     
     AudioQueueStop(_audioQueue, true);
     AudioQueueDispose(_audioQueue, true);
-    [[AVAudioSession sharedInstance] setActive:NO error:nil];
+#warning 这里如果设置了下就会有点卡
+//    [[AVAudioSession sharedInstance] setActive:NO error:nil];
     
     if (self.fileReaderDelegate&&![self.fileReaderDelegate completeReadWithPlayer:self withIsError:NO]) {
         [self postAErrorWithErrorCode:MLAudioPlayerErrorCodeAboutFile andDescription:@"为音频输出关闭文件失败"];
@@ -289,7 +295,7 @@ void outBufferHandler(void *inUserData,AudioQueueRef inAQ,AudioQueueBufferRef in
 - (void)stopProximityMonitering {
     //TODO: 发现上段音频以暗屏播放停止后，再开始播放新音频后，光屏转暗屏后这一事件捕获不到。会出现判断有误的情况，微信也如此，但是微信对这种情况做了重力感应判断，即竖着时候，猜测如此
     [[UIDevice currentDevice] setProximityMonitoringEnabled:NO];
-    [[AVAudioSession sharedInstance] overrideOutputAudioPort:AVAudioSessionPortOverrideNone error:nil];
+//    [[AVAudioSession sharedInstance] overrideOutputAudioPort:AVAudioSessionPortOverrideNone error:nil];
     DLOG(@"关闭距离监听");
 }
 

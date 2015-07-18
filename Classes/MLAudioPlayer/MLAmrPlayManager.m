@@ -44,12 +44,25 @@
         
         __weak __typeof(self)weakSelf = self;
         _player.receiveErrorBlock = ^(NSError *error){
+            if (!weakSelf.filePath) {
+                return;
+            }
             //这里应该post 一个通知，通知音频播放错误
-            [[NSNotificationCenter defaultCenter]postNotificationName:MLAMRPLAYER_PLAY_RECEIVE_ERROR_NOTIFICATION object:nil userInfo:@{@"error":error,@"filePath":weakSelf.filePath}];
+            NSURL *filePath = weakSelf.filePath;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter]postNotificationName:MLAMRPLAYER_PLAY_RECEIVE_ERROR_NOTIFICATION object:nil userInfo:@{@"error":error,@"filePath":filePath}];
+            });
         };
         _player.receiveStoppedBlock = ^{
-            //这里应该post 一个通知，通知音频播放完毕
-            [[NSNotificationCenter defaultCenter]postNotificationName:MLAMRPLAYER_PLAY_RECEIVE_STOP_NOTIFICATION object:nil userInfo:@{@"filePath":weakSelf.filePath}];
+            if (!weakSelf.filePath) {
+                return;
+            }
+            NSURL *filePath = weakSelf.filePath;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                //因为下面的playWithFilePath方法是先stop然后start，如果不放到下一个runloop里的话，这里被通知的对象可能会执行一个新的playWithFilePath方法就造成了。 stop -> stop,start ->start的情况，就出BUG了。而放到下一个runloop里就不怕了。
+                //这里应该post 一个通知，通知音频播放完毕
+                [[NSNotificationCenter defaultCenter]postNotificationName:MLAMRPLAYER_PLAY_RECEIVE_STOP_NOTIFICATION object:nil userInfo:@{@"filePath":filePath}];
+            });
         };
 	}
 	return _player;

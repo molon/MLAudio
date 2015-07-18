@@ -40,6 +40,7 @@ typedef NS_OPTIONS(NSUInteger, MLAudioPlayButtonState) {
 @property (nonatomic, copy) void(^audioStateChangedBlock)(MLAudioPlayButtonState audioState,MLAudioPlayButton *button);
 @property (nonatomic, copy) void(^preferredWidthChangedBlock)(CGFloat preferredWidth,MLAudioPlayButton *button);
 @property (nonatomic, copy) void(^audioWillPlayBlock)(MLAudioPlayButton *button);
+@property (nonatomic, copy) void(^audioPlayStoppedBlock)(MLAudioPlayButton *button);
 @property (nonatomic, copy) void(^didReceivePlayErrorBlock)(NSError *error,MLAudioPlayButton *button);
 
 - (CGFloat)preferredWidth;

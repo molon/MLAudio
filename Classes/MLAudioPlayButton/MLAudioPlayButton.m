@@ -77,7 +77,9 @@
         return;
     }
     //    DLOG(@"发现音频播放停止:%@,如果发现此处执行多次不用在意。那可能是因为tableView复用的关系",[self.filePath path]);
-    
+    if (self.audioPlayStoppedBlock) {
+        self.audioPlayStoppedBlock(self);
+    }
 }
 
 - (void)playReceiveError:(NSNotification*)notification
