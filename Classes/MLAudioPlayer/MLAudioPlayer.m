@@ -132,12 +132,14 @@ void outBufferHandler(void *inUserData,AudioQueueRef inAQ,AudioQueueBufferRef in
     }
     
     NSError *error = nil;
-    
+    BOOL ret = NO;
     //设置audio session的category
-    BOOL ret = [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord error:&error];
-    if (!ret) {
-        [self postAErrorWithErrorCode:MLAudioPlayerErrorCodeAboutSession andDescription:@"为AVAudioSession设置Category失败"];
-        return;
+    if (![[AVAudioSession sharedInstance].category isEqualToString:AVAudioSessionCategoryPlayAndRecord]) {
+        ret = [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord error:&error];
+        if (!ret) {
+            [self postAErrorWithErrorCode:MLAudioPlayerErrorCodeAboutSession andDescription:@"为AVAudioSession设置Category失败"];
+            return;
+        }
     }
     
     //启用audio session
@@ -227,8 +229,12 @@ void outBufferHandler(void *inUserData,AudioQueueRef inAQ,AudioQueueBufferRef in
     
     AudioQueueStop(_audioQueue, true);
     AudioQueueDispose(_audioQueue, true);
-#warning 这里如果设置了下就会有点卡
-//    [[AVAudioSession sharedInstance] setActive:NO error:nil];
+    //这玩意比较耗费性能。这样搞比较好些。
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2f * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        if (!self.isPlaying) {
+            [[AVAudioSession sharedInstance] setActive:NO error:nil];
+        }
+    });
     
     if (self.fileReaderDelegate&&![self.fileReaderDelegate completeReadWithPlayer:self withIsError:NO]) {
         [self postAErrorWithErrorCode:MLAudioPlayerErrorCodeAboutFile andDescription:@"为音频输出关闭文件失败"];
@@ -255,8 +261,13 @@ void outBufferHandler(void *inUserData,AudioQueueRef inAQ,AudioQueueBufferRef in
     
     AudioQueueStop(_audioQueue, true);
     AudioQueueDispose(_audioQueue, true);
-    [[AVAudioSession sharedInstance] setActive:NO error:nil];
-    
+    //这玩意比较耗费性能。这样搞比较好些。
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2f * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        if (!self.isPlaying) {
+            [[AVAudioSession sharedInstance] setActive:NO error:nil];
+        }
+    });
+
     [self.fileReaderDelegate completeReadWithPlayer:self withIsError:YES];
     DLOG(@"播放发生错误");
     

@@ -45,7 +45,7 @@ typedef NS_OPTIONS(NSUInteger, MLAudioPlayerErrorCode) {
 }
 
 
-@property (nonatomic, assign) BOOL isPlaying;
+@property (atomic, assign) BOOL isPlaying;
 
 @property (nonatomic, weak) id<FileReaderForMLAudioPlayer> fileReaderDelegate;
 
