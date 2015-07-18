@@ -117,7 +117,7 @@
     }
     
     if (!self.isAudioPlaying) {
-        [[MLAmrPlayManager manager]playWithFilePath:self.filePath];
+        [[MLAmrPlayManager manager]playWithFilePath:self.filePath extra:self.audioURL];
     }else{
         [[MLAmrPlayManager manager]stopPlaying];
     }
@@ -189,6 +189,10 @@
 {
     __weak __typeof(self)weakSelf = self;
     [self setAudioWithURL:url success:^(NSURLRequest *request, NSHTTPURLResponse *response, NSURL *audioPath) {
+        if (!weakSelf) {
+            return;
+        }
+        
         if (!audioPath) {
             weakSelf.filePath = audioPath;
             return;
@@ -196,7 +200,7 @@
         
         weakSelf.filePath = audioPath;
         if (autoPlay) {
-            [[MLAmrPlayManager manager]playWithFilePath:weakSelf.filePath];
+            [[MLAmrPlayManager manager]playWithFilePath:weakSelf.filePath extra:weakSelf.audioURL];
         }
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
         DLOG(@"%@",error);

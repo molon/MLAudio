@@ -19,7 +19,7 @@
 + (instancetype)manager;
 + (double)durationOfAmrFilePath:(NSURL*)filePath;
 
-- (void)playWithFilePath:(NSURL*)filePath;
+- (void)playWithFilePath:(NSURL*)filePath extra:(id)extra;
 - (void)stopPlaying;
 
 @end
