@@ -229,8 +229,9 @@ void outBufferHandler(void *inUserData,AudioQueueRef inAQ,AudioQueueBufferRef in
     
     AudioQueueStop(_audioQueue, true);
     AudioQueueDispose(_audioQueue, true);
-    //这玩意比较耗费性能。这样搞比较好些。
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2f * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    //AVAudioSession这玩意不知道是不是线程安全，setActive方法会比较卡。未找到解决方案。
+    //dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if (!self.isPlaying) {
             [[AVAudioSession sharedInstance] setActive:NO error:nil];
         }
@@ -261,8 +262,9 @@ void outBufferHandler(void *inUserData,AudioQueueRef inAQ,AudioQueueBufferRef in
     
     AudioQueueStop(_audioQueue, true);
     AudioQueueDispose(_audioQueue, true);
-    //这玩意比较耗费性能。这样搞比较好些。
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2f * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    //AVAudioSession这玩意不知道是不是线程安全，setActive方法会比较卡。未找到解决方案。
+    //dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if (!self.isPlaying) {
             [[AVAudioSession sharedInstance] setActive:NO error:nil];
         }
