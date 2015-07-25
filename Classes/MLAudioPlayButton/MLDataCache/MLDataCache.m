@@ -86,7 +86,7 @@ static inline NSString * MLDataCacheKeyFromURLRequest(NSURLRequest *request) {
             data = [[NSFileManager defaultManager] contentsAtPath:filePath];
             if(data){
                 //存到cache里
-                [self cacheData:data forRequest:request];
+                [self setObject:data forKey:key];
             }
         }
     }
