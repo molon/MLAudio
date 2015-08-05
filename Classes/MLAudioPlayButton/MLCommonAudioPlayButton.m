@@ -36,21 +36,27 @@
 - (void)playReceiveStart:(NSNotification *)notification
 {
     [super playReceiveStart:notification];
-    
+    if (![self isNotificationForMe:notification]) {
+        return;
+    }
     [self updatePlayingSignImage];
 }
 
 - (void)playReceiveStop:(NSNotification*)notification
 {
     [super playReceiveStop:notification];
-    
+    if (![self isNotificationForMe:notification]) {
+        return;
+    }
     [self updatePlayingSignImage];
 }
 
 - (void)playReceiveError:(NSNotification*)notification
 {
     [super playReceiveError:notification];
-    
+    if (![self isNotificationForMe:notification]) {
+        return;
+    }
     [self updatePlayingSignImage];
 }
 

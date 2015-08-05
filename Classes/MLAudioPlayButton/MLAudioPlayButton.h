@@ -60,4 +60,8 @@ typedef NS_OPTIONS(NSUInteger, MLAudioPlayButtonState) {
 
 - (void)setAudioWithURLRequest:(NSURLRequest *)urlRequest success:(void (^)(NSURLRequest *request, NSHTTPURLResponse *response, NSURL* audioPath))success
                 failure:(void (^)(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error))failure;
+
+
+
+- (BOOL)isNotificationForMe:(NSNotification*)notification;
 @end

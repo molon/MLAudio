@@ -73,8 +73,7 @@
 #pragma mark - notification
 - (void)playReceiveStart:(NSNotification*)notification
 {
-    NSDictionary *userInfo = notification.userInfo;
-    if (![userInfo[@"filePath"] isEqual:self.filePath]) {
+    if (![self isNotificationForMe:notification]) {
         return;
     }
     
@@ -85,11 +84,10 @@
 
 - (void)playReceiveStop:(NSNotification*)notification
 {
-    NSDictionary *userInfo = notification.userInfo;
-    if (![userInfo[@"filePath"] isEqual:self.filePath]) {
+    if (![self isNotificationForMe:notification]) {
         return;
     }
-    
+    NSDictionary *userInfo = notification.userInfo;
     BOOL playComplete = [userInfo[@"playComplete"] boolValue];
     //    DLOG(@"发现音频播放停止:%@,如果发现此处执行多次不用在意。那可能是因为tableView复用的关系",[self.filePath path]);
     if (self.audioPlayStoppedBlock) {
@@ -99,16 +97,21 @@
 
 - (void)playReceiveError:(NSNotification*)notification
 {
-    NSDictionary *userInfo = notification.userInfo;
-    if (![userInfo[@"filePath"] isEqual:self.filePath]) {
+    if (![self isNotificationForMe:notification]) {
         return;
     }
-    
+    NSDictionary *userInfo = notification.userInfo;
     if (self.didReceivePlayErrorBlock) {
         self.didReceivePlayErrorBlock(userInfo[@"error"],self);
     }
 }
 
+- (BOOL)isNotificationForMe:(NSNotification*)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    return [userInfo[@"filePath"] isEqual:self.filePath];
+}
+            
 #pragma mark - event
 - (void)click
 {
