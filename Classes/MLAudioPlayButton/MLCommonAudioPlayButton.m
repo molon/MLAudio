@@ -113,8 +113,8 @@
 #pragma mark - helper
 - (void)updatePlayingSignImage
 {
+    self.playingSignImageView.image = nil;
     if (self.audioState!=MLAudioPlayButtonStateNormal) {
-        self.playingSignImageView.image = nil;
         return;
     }
     
