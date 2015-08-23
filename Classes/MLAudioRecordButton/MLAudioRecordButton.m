@@ -36,71 +36,84 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        // Initialization code
-        self.minValidDuration = 0.5;
-        self.maxFileSize = 256*1024;
-        self.maxDuration = 120.0f;
-        self.exclusiveTouch = YES;
-        
-        //监测这些事件
-        [self addTarget:self action:@selector(dragEnter) forControlEvents:UIControlEventTouchDragEnter];
-        [self addTarget:self action:@selector(dragExit) forControlEvents:UIControlEventTouchDragExit];
-        
-        [self addTarget:self action:@selector(upOutSide) forControlEvents:UIControlEventTouchUpOutside];
-        [self addTarget:self action:@selector(upInside) forControlEvents:UIControlEventTouchUpInside];
-        
-        [self addTarget:self action:@selector(cancel) forControlEvents:UIControlEventTouchCancel];
-        [self addTarget:self action:@selector(down) forControlEvents:UIControlEventTouchDown];
-        
-        //一些block回调，牵扯到weakSelf的回调不适合放到getter里
-        __weak __typeof(self)weakSelf = self;
-        self.recorder.receiveStoppedBlock = ^{
-            __strong __typeof(weakSelf)sSelf = weakSelf;
-            sSelf.status = MLAudioRecordButtonStatusNormal;
-            
-            if (!sSelf.isStopBecauseCancel) {
-                NSTimeInterval duration = [AmrPlayerReader durationOfAmrFilePath:[sSelf.currentFilePath path]];
-                if (duration<sSelf.minValidDuration) {
-                    if (sSelf.didRecordTooShortAudioBlock) {
-                        sSelf.didRecordTooShortAudioBlock(sSelf.currentFilePath,duration,sSelf);
-                    }
-                }else{
-                    if (sSelf.didRecordAudioBlock) {
-                        sSelf.didRecordAudioBlock(sSelf.currentFilePath,duration,sSelf);
-                    }
-                }
-            }
-            sSelf.meterObserver.audioQueue = nil;
-            sSelf.enabled = YES;
-        };
-        self.recorder.receiveErrorBlock = ^(NSError *error){
-            __strong __typeof(weakSelf)sSelf = weakSelf;
-            sSelf.status = MLAudioRecordButtonStatusNormal;
-            
-            if (sSelf.didReceiveErrorBlock) {
-                sSelf.didReceiveErrorBlock(error,sSelf);
-            }
-            
-            sSelf.meterObserver.audioQueue = nil;
-            sSelf.enabled = YES;
-        };
-        
-        self.meterObserver.actionBlock = ^(NSArray *levelMeterStates,MLAudioMeterObserver *meterObserver){
-            __strong __typeof(weakSelf)sSelf = weakSelf;
-            if (sSelf.volumeUpdatedBlock) {
-                sSelf.volumeUpdatedBlock([MLAudioMeterObserver volumeForLevelMeterStates:levelMeterStates],sSelf);
-            }
-        };
-        self.meterObserver.errorBlock = ^(NSError *error,MLAudioMeterObserver *meterObserver){
-            __strong __typeof(weakSelf)sSelf = weakSelf;
-            
-            if (sSelf.didReceiveErrorBlock) {
-                sSelf.didReceiveErrorBlock(error,sSelf);
-            }
-        };
-        
+        [self setUp];
     }
     return self;
+}
+
+-(id)initWithCoder:(NSCoder *)aDecoder
+{
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        [self setUp];
+    }
+    return self;
+}
+
+- (void)setUp
+{
+    // Initialization code
+    self.minValidDuration = 0.5;
+    self.maxFileSize = 256*1024;
+    self.maxDuration = 120.0f;
+    self.exclusiveTouch = YES;
+    
+    //监测这些事件
+    [self addTarget:self action:@selector(dragEnter) forControlEvents:UIControlEventTouchDragEnter];
+    [self addTarget:self action:@selector(dragExit) forControlEvents:UIControlEventTouchDragExit];
+    
+    [self addTarget:self action:@selector(upOutSide) forControlEvents:UIControlEventTouchUpOutside];
+    [self addTarget:self action:@selector(upInside) forControlEvents:UIControlEventTouchUpInside];
+    
+    [self addTarget:self action:@selector(cancel) forControlEvents:UIControlEventTouchCancel];
+    [self addTarget:self action:@selector(down) forControlEvents:UIControlEventTouchDown];
+    
+    //一些block回调，牵扯到weakSelf的回调不适合放到getter里
+    __weak __typeof(self)weakSelf = self;
+    self.recorder.receiveStoppedBlock = ^{
+        __strong __typeof(weakSelf)sSelf = weakSelf;
+        sSelf.status = MLAudioRecordButtonStatusNormal;
+        
+        if (!sSelf.isStopBecauseCancel) {
+            NSTimeInterval duration = [AmrPlayerReader durationOfAmrFilePath:[sSelf.currentFilePath path]];
+            if (duration<sSelf.minValidDuration) {
+                if (sSelf.didRecordTooShortAudioBlock) {
+                    sSelf.didRecordTooShortAudioBlock(sSelf.currentFilePath,duration,sSelf);
+                }
+            }else{
+                if (sSelf.didRecordAudioBlock) {
+                    sSelf.didRecordAudioBlock(sSelf.currentFilePath,duration,sSelf);
+                }
+            }
+        }
+        sSelf.meterObserver.audioQueue = nil;
+        sSelf.enabled = YES;
+    };
+    self.recorder.receiveErrorBlock = ^(NSError *error){
+        __strong __typeof(weakSelf)sSelf = weakSelf;
+        sSelf.status = MLAudioRecordButtonStatusNormal;
+        
+        if (sSelf.didReceiveErrorBlock) {
+            sSelf.didReceiveErrorBlock(error,sSelf);
+        }
+        
+        sSelf.meterObserver.audioQueue = nil;
+        sSelf.enabled = YES;
+    };
+    
+    self.meterObserver.actionBlock = ^(NSArray *levelMeterStates,MLAudioMeterObserver *meterObserver){
+        __strong __typeof(weakSelf)sSelf = weakSelf;
+        if (sSelf.volumeUpdatedBlock) {
+            sSelf.volumeUpdatedBlock([MLAudioMeterObserver volumeForLevelMeterStates:levelMeterStates],sSelf);
+        }
+    };
+    self.meterObserver.errorBlock = ^(NSError *error,MLAudioMeterObserver *meterObserver){
+        __strong __typeof(weakSelf)sSelf = weakSelf;
+        
+        if (sSelf.didReceiveErrorBlock) {
+            sSelf.didReceiveErrorBlock(error,sSelf);
+        }
+    };
 }
 
 - (void)dealloc

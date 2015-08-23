@@ -13,4 +13,7 @@
 
 - (instancetype)initWithMLAudioRecordTipsView:(id<MLAudioRecordTipsViewDelegate>)tipsView;
 
+
+@property (nonatomic, strong) id<MLAudioRecordTipsViewDelegate> tipsView;
+
 @end

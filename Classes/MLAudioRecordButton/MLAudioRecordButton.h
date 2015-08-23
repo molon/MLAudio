@@ -43,4 +43,7 @@ typedef NS_ENUM(NSUInteger, MLAudioRecordButtonStatus) {
 //外部代码停止
 - (void)stopRecordingWithCancel:(BOOL)cancel;
 
+
+//override
+- (void)setUp;
 @end
