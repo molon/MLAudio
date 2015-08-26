@@ -21,7 +21,7 @@ s.resource = "Classes/**/*.bundle"
 s.frameworks = 'AVFoundation'
 s.requires_arc  = true
 
-s.dependency 'AFNetworking', '~> 2.5.4'
+s.dependency 'AFNetworking', '= 2.5.4'
 
 s.prefix_header_contents = '
 #ifdef DEBUG
