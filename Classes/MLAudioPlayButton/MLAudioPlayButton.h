@@ -45,6 +45,8 @@ typedef NS_OPTIONS(NSUInteger, MLAudioPlayButtonState) {
 
 - (CGFloat)preferredWidth;
 
+- (void)click;
+
 #pragma mark - cache
 + (MLDataCache*)sharedDataCache;
 
