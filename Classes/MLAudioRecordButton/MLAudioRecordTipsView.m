@@ -157,18 +157,17 @@
 #pragma mark - helper
 - (UIWindow*)getMainWindow
 {
-    return [UIApplication sharedApplication].delegate.window;
+//    return [UIApplication sharedApplication].delegate.window;
     
-//    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
-//    if (window.windowLevel != UIWindowLevelNormal) {
-//        NSArray *windows = [[UIApplication sharedApplication] windows];
-//        for(window in windows) {
-//            if (window.windowLevel == UIWindowLevelNormal) {
-//                break;
-//            }
-//        }
-//    }
-//    return window;
+    NSEnumerator *frontToBackWindows = [[[UIApplication sharedApplication]windows] reverseObjectEnumerator];
+    UIScreen *mainScreen = [UIScreen mainScreen];
+    
+    for (UIWindow *window in frontToBackWindows) {
+        if (window.screen == mainScreen && window.windowLevel == UIWindowLevelNormal && !window.hidden) {
+            return window;
+        }
+    }
+    return nil;
 }
 
 #pragma mark - outcall
