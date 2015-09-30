@@ -2,6 +2,11 @@
   "name": "MLAudio",
   "version": "1.0.0",
   "summary": "MLAudio",
+  "homepage": "https://github.com/molon/MLAudio",
+  "source": {
+    "git": "https://github.com/molon/MLAudio.git",
+    "tag": "1.0.0"
+  },
   "license": {
     "type": "MIT"
   },
@@ -20,8 +25,8 @@
   "requires_arc": true,
   "dependencies": {
     "AFNetworking": [
-      "~> 2.5.4"
+      "= 2.6.0"
     ]
   },
-  "prefix_header_contents": "\n#ifdef DEBUG\n\n#define DLOG(format, ...)                   \\\nNSLog(@\"\\n%s:%d\\n%@\",               \\\n__PRETTY_FUNCTION__, __LINE__,      \\\n[NSString stringWithFormat:format, ## __VA_ARGS__])\n\n#else\n\n#define DLOG(format, ...)\n\n#endif"
+  "prefix_header_contents": "#ifdef DEBUG\n\n#define DLOG(format, ...)                   \\\nNSLog(@\"\\n%s:%d\\n%@\",               \\\n__PRETTY_FUNCTION__, __LINE__,      \\\n[NSString stringWithFormat:format, ## __VA_ARGS__])\n\n#else\n\n#define DLOG(format, ...)\n\n#endif"
 }
