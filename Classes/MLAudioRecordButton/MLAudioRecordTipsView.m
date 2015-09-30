@@ -157,16 +157,18 @@
 #pragma mark - helper
 - (UIWindow*)getMainWindow
 {
-    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
-    if (window.windowLevel != UIWindowLevelNormal) {
-        NSArray *windows = [[UIApplication sharedApplication] windows];
-        for(window in windows) {
-            if (window.windowLevel == UIWindowLevelNormal) {
-                break;
-            }
-        }
-    }
-    return window;
+    return [UIApplication sharedApplication].delegate.window;
+    
+//    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
+//    if (window.windowLevel != UIWindowLevelNormal) {
+//        NSArray *windows = [[UIApplication sharedApplication] windows];
+//        for(window in windows) {
+//            if (window.windowLevel == UIWindowLevelNormal) {
+//                break;
+//            }
+//        }
+//    }
+//    return window;
 }
 
 #pragma mark - outcall
