@@ -129,17 +129,17 @@
 {
     [super didMoveToWindow];
     
-    UIView *superView = [self superview];
-    while (superView) {
-        for (UIGestureRecognizer *ges in superView.gestureRecognizers) {
-            if (ges.delaysTouchesBegan) {
-                [self.needRestoreDelayBeginGestures addObject:ges];
-                ges.delaysTouchesBegan = NO;
-            }
-        }
-        
-        superView = [superView superview];
-    }
+//    UIView *superView = [self superview];
+//    while (superView) {
+//        for (UIGestureRecognizer *ges in superView.gestureRecognizers) {
+//            if (ges.delaysTouchesBegan) {
+//                [self.needRestoreDelayBeginGestures addObject:ges];
+//                ges.delaysTouchesBegan = NO;
+//            }
+//        }
+//        
+//        superView = [superView superview];
+//    }
 }
 
 - (void)willMoveToWindow:(UIWindow *)newWindow
