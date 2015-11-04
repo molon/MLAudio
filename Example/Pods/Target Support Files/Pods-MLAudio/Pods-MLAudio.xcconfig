@@ -1,3 +1,0 @@
-PODS_MLAUDIO_FRAMEWORK_SEARCH_PATHS = "$(PODS_ROOT)/../../Classes/mp3_en_de"
-PODS_MLAUDIO_LIBRARY_SEARCH_PATHS = "$(PODS_ROOT)/../../Classes/amr_en_de/lib" "$(PODS_ROOT)/../../Classes/amr_en_de/lib"
-PODS_MLAUDIO_OTHER_LDFLAGS = -l"opencore-amrnb" -l"opencore-amrwb" -framework "AVFoundation" -framework "lame"

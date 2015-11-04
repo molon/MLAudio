@@ -9,9 +9,6 @@
 #import "MLCommonAudioPlayButton.h"
 #import "MLAudioPlayButton+Override.h"
 
-#define BUNDLE_IMG(o) [UIImage imageNamed:[@"MLPlayAudioButtonImages.bundle" stringByAppendingPathComponent:(o)]]
-#define BUNDLE_ANIMATE_IMG(o,d) [UIImage animatedImageNamed:[@"MLPlayAudioButtonImages.bundle" stringByAppendingPathComponent:(o)] duration:(d)]
-
 @interface MLCommonAudioPlayButton()
 
 @property (nonatomic, strong) UIImageView *playingSignImageView;
@@ -110,6 +107,13 @@
     }
 }
 
+- (void)setCustomBundleName:(NSString *)customBundleName
+{
+    _customBundleName = customBundleName;
+    
+    [self updatePlayingSignImage];
+}
+
 #pragma mark - helper
 - (void)updatePlayingSignImage
 {
@@ -118,12 +122,19 @@
         return;
     }
     
+    NSString *bundleName = self.customBundleName;
+    if (!bundleName) {
+        bundleName = @"MLPlayAudioButtonImages.bundle";
+    }
+    
     NSString *prefix = self.locationRight?@"Sender音频播放00":@"Receiver音频播放00";
     if (self.isAudioPlaying) {
-        self.playingSignImageView.image = BUNDLE_ANIMATE_IMG(prefix, 1.0f);
+        UIImage *image = [UIImage animatedImageNamed:[bundleName stringByAppendingPathComponent:prefix] duration:1.0f];
+        self.playingSignImageView.image = image;
     }else{
         NSString *imageName = self.locationRight?@"Sender音频未播放":@"Receiver音频未播放";
-        self.playingSignImageView.image = BUNDLE_IMG(imageName);
+        UIImage *image = [UIImage imageNamed:[bundleName stringByAppendingPathComponent:imageName]];
+        self.playingSignImageView.image = image;
     }
 }
 
