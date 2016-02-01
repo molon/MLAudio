@@ -22,6 +22,9 @@
 @property (nonatomic, assign) unsigned long recordedFileSize;
 @property (nonatomic, assign) double recordedSecondCount;
 
+@property (nonatomic, assign) unsigned long lastBytesLength;
+@property (nonatomic, assign) unsigned char * lastBytes;
+
 @end
 
 @implementation AmrRecordWriter
@@ -52,12 +55,17 @@
     //建立amr文件
     _file = fopen((const char *)[self.filePath UTF8String], "wb+");
     if (_file==0) {
-        DLOG(@"建立文件失败:%s",__FUNCTION__);
+        NSLog(@"建立文件失败:%s",__FUNCTION__);
         return NO;
     }
     
     self.recordedFileSize = 0;
     self.recordedSecondCount = 0;
+    
+    if(!self.lastBytes)
+        self.lastBytes = malloc(320);
+    
+    self.lastBytesLength = 0;
     
     //写入文件头
     static const char* amrHeader = "#!AMR\n";
@@ -74,7 +82,7 @@
 {
     if (self.maxSecondCount>0){
         if (self.recordedSecondCount+recoder.bufferDurationSeconds>self.maxSecondCount){
-            //            DLOG(@"录音超时");
+            //            NSLog(@"录音超时");
             dispatch_async(dispatch_get_main_queue(), ^{
                 [recoder stopRecording];
             });
@@ -87,19 +95,31 @@
     const void *recordingData = data.bytes;
     NSUInteger pcmLen = data.length;
     
+    //    NSLog(@"%lu",(unsigned long)pcmLen);
+    
     if (pcmLen<=0){
         return YES;
     }
     if (pcmLen%2!=0){
         pcmLen--; //防止意外，如果不是偶数，情愿减去最后一个字节。
-        DLOG(@"不是偶数");
+        //        NSLog(@"不是偶数");
     }
     
-    unsigned char buffer[PCM_FRAME_SIZE*2];
-    for (int i =0; i < pcmLen ;i+=PCM_FRAME_SIZE*2) {
-        short *pPacket = (short *)((unsigned char*)recordingData+i);
-        if (pcmLen-i<PCM_FRAME_SIZE*2){
-            continue; //不是一个完整的就拜拜
+    int baseLength = PCM_FRAME_SIZE*2;
+    unsigned char * bytes = malloc(pcmLen+baseLength);
+    memset(bytes,0,pcmLen+baseLength);
+    memcpy(bytes,self.lastBytes,self.lastBytesLength);
+    memcpy(bytes+self.lastBytesLength, recordingData, pcmLen);
+    pcmLen += self.lastBytesLength;
+    self.lastBytesLength=0;
+    unsigned char buffer[baseLength];
+    for (int i =0; i < pcmLen ;i+=baseLength) {
+        short *pPacket = (short *)((unsigned char*)bytes+i);
+        if (pcmLen-i<baseLength){
+            
+            self.lastBytesLength = pcmLen - i;
+            memcpy(self.lastBytes, pPacket, self.lastBytesLength);
+            continue; //不是一个完整的就拜拜，等待下次数据传递进来再处理
         }
         
         memset(buffer, 0, sizeof(buffer));
@@ -107,23 +127,26 @@
         int recvLen = Encoder_Interface_Encode(_destate,MR122,pPacket,buffer,0);
         if (recvLen>0) {
             if (self.maxFileSize>0){
-//                DLOG(@"%ld",self.recordedFileSize+recvLen);
                 if(self.recordedFileSize+recvLen>self.maxFileSize){
-                    //                    DLOG(@"录音文件过大");
+                    //                    NSLog(@"录音文件过大");
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [recoder stopRecording];
                     });
+                    
+                    free(bytes);
                     return YES;//超过了最大文件大小就直接返回
                 }
             }
             
             if(fwrite(buffer,1,recvLen,_file)==0){
+                free(bytes);
                 return NO;//只有写文件有可能出错。返回NO
             }
             self.recordedFileSize += recvLen;
         }
     }
     
+    free(bytes);
     return YES;
 }
 
@@ -139,12 +162,19 @@
         _destate = 0;
     }
     
+    if(_lastBytes)
+    {
+        free(_lastBytes);
+        _lastBytes = nil;
+    }
+    _lastBytesLength = 0;
+    
     return YES;
 }
 
 - (void)dealloc
 {
-	if(_file){
+    if(_file){
         fclose(_file);
         _file = 0;
     }
@@ -152,6 +182,13 @@
         Encoder_Interface_exit((void*)_destate);
         _destate = 0;
     }
+    
+    if(_lastBytes)
+    {
+        free(_lastBytes);
+        _lastBytes = nil;
+    }
+    _lastBytesLength = 0;
 }
 
 
