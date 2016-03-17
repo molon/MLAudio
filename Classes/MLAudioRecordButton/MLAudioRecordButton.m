@@ -227,13 +227,13 @@
 
 - (void)setBackgroundImageBlock:(UIImage *(^)(MLAudioRecordButtonStatus, MLAudioRecordButton *))backgroundImageBlock
 {
-    _backgroundImageBlock = backgroundImageBlock;
+    _backgroundImageBlock = [backgroundImageBlock copy];
     [self refreshBackgroundImage];
 }
 
 - (void)setImageBlock:(UIImage *(^)(MLAudioRecordButtonStatus, MLAudioRecordButton *))imageBlock
 {
-    _imageBlock = imageBlock;
+    _imageBlock = [imageBlock copy];
     [self refreshImage];
 }
 

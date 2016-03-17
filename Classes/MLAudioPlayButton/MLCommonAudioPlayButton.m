@@ -109,7 +109,7 @@
 
 - (void)setCustomBundleName:(NSString *)customBundleName
 {
-    _customBundleName = customBundleName;
+    _customBundleName = [customBundleName copy];
     
     [self updatePlayingSignImage];
 }
