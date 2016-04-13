@@ -206,7 +206,7 @@ void outBufferHandler(void *inUserData,AudioQueueRef inAQ,AudioQueueBufferRef in
     self.isPlaying = YES;
     
     self.isPlayDone = NO;
-    [self startProximityMonitering];
+    [self startProximityMoniter];
     
     //输出的buffer必须先填满一次才能准备下一次buffer
     for (int i = 0; i < kNumberAudioQueueBuffers; ++i) {
@@ -223,7 +223,7 @@ void outBufferHandler(void *inUserData,AudioQueueRef inAQ,AudioQueueBufferRef in
         return;
     }
     
-    [self stopProximityMonitering];
+    [self stopProximityMoniter];
     self.isPlayDone = YES; //和isPlaying的区别是这个是给里面看的，那个是给外面看的
     self.isPlaying = NO;
     
@@ -256,7 +256,7 @@ void outBufferHandler(void *inUserData,AudioQueueRef inAQ,AudioQueueBufferRef in
 #pragma mark - error
 - (void)postAErrorWithErrorCode:(MLAudioPlayerErrorCode)code andDescription:(NSString*)description
 {
-    [self stopProximityMonitering];
+    [self stopProximityMoniter];
     self.isPlayDone = YES;
     self.isPlaying = NO;
     
@@ -300,7 +300,7 @@ void outBufferHandler(void *inUserData,AudioQueueRef inAQ,AudioQueueBufferRef in
     return NO;
 }
 
-- (void)startProximityMonitering {
+- (void)startProximityMoniter {
     [[UIDevice currentDevice] setProximityMonitoringEnabled:YES];
     if ([self isUseOutputExceptBuiltInPort]) {
         [[AVAudioSession sharedInstance] overrideOutputAudioPort:AVAudioSessionPortOverrideNone error:nil];
@@ -310,7 +310,7 @@ void outBufferHandler(void *inUserData,AudioQueueRef inAQ,AudioQueueBufferRef in
     DLOG(@"开启距离监听");
 }
 
-- (void)stopProximityMonitering {
+- (void)stopProximityMoniter {
     //TODO: 发现上段音频以暗屏播放停止后，再开始播放新音频后，光屏转暗屏后这一事件捕获不到。会出现判断有误的情况，微信也如此，但是微信对这种情况做了重力感应判断，即竖着时候，猜测如此
     [[UIDevice currentDevice] setProximityMonitoringEnabled:NO];
 //    [[AVAudioSession sharedInstance] overrideOutputAudioPort:AVAudioSessionPortOverrideNone error:nil];
